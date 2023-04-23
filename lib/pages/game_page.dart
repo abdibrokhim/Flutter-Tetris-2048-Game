@@ -38,16 +38,9 @@ class _GamePageState extends State<GamePage> {
   ];
 
   List<int> chosenPiece = [];
-  List<int> landedPiece = [];
-  List<List<int>> landedPosColor = [
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-  ];
+  List<dynamic> landedPiece = [];
+  List<dynamic> landedPosColor = [];
+  Color chosenColor = Colors.red;
 
   static int numberOfSquares = 180;
   static int number = 0;
@@ -75,12 +68,12 @@ class _GamePageState extends State<GamePage> {
       duration,
       (timer) {
         if (hitFloor()) {
-          for (int i = 0; i < chosenPiece.length; i++) {
-            landedPiece.add(chosenPiece[i]);
-            print('landedPiece: $landedPiece');
-            
-            landedPosColor[number % pieces.length].add(chosenPiece[i]);
-          }
+          landedPiece.add([chosenPiece]);
+          print('landedPiece: $landedPiece');
+
+          landedPosColor.add([landedPiece, chosenColor]);
+          print('landedPosColor: $landedPosColor');
+
           number++;
           startGame();
           timer.cancel();
@@ -92,22 +85,20 @@ class _GamePageState extends State<GamePage> {
   }
   
   void resetPieces() {
-    landedPiece = [];
-    landedPosColor = [];
+    // landedPiece = [];
+    chosenPiece = [];
+    // landedPosColor = [];
   }
 
   void choosePiece() {
     // Choose a random piece
     int randomIndex = Random().nextInt(pieces.length);
+    
     chosenPiece = pieces[randomIndex];
-
     print('chosenPiece: $chosenPiece');
 
-    // Assign a color to each square in the chosen piece
-    Color color = pieceColor[randomIndex]; // Replace red with the desired color
-    print('color: $color');
-
-    print('landedPosColor: $landedPosColor');
+    chosenColor = pieceColor[randomIndex];
+    print('color: $chosenColor');
   }
 
   bool hitFloor() {
@@ -119,12 +110,16 @@ class _GamePageState extends State<GamePage> {
       countLanded();
     }
 
-    for (int i = 0; i < chosenPiece.length; i++) {
-      if (landedPiece.contains(chosenPiece[i] + 10)) {
-        hitFloor = true;
-        countLanded();
+    if (landedPiece.isNotEmpty) {
+      for (int i = 0; i < landedPiece.length; i++) {
+        if (landedPiece[i].contains(chosenPiece[chosenPiece.length - 1] + 10)) {
+          hitFloor = true;
+          countLanded();
+          break;
+        }
       }
     }
+
     return hitFloor;
   }
 
@@ -135,9 +130,6 @@ class _GamePageState extends State<GamePage> {
       }
     });
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +144,7 @@ class _GamePageState extends State<GamePage> {
           child: GameGridView(
             newPiece: chosenPiece,
             landedPieces: landedPosColor,
-            newColor: pieceColor[number % pieces.length],
+            newColor: chosenColor,
           ),
         ),
         SizedBox(

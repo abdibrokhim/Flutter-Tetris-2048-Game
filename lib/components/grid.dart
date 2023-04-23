@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class GameGridView extends StatelessWidget {
   final List<int> newPiece;
-  final List<List<int>> landedPieces;
+  final List<dynamic> landedPieces;
   final Color newColor;
   
   
@@ -38,9 +38,9 @@ class GameGridView extends StatelessWidget {
                   ),
                 if (landedPieces.isNotEmpty)
                   for (int i = 0; i < landedPieces.length; i++)
-                    if (landedPieces[i].contains(index))
+                    if (landedPieces[i][0].contains(index))
                       Container(
-                        color: newColor,
+                        color: landedPieces[i][1],
                       ),
               ],
             ),
