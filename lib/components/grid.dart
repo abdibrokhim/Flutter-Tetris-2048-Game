@@ -35,7 +35,7 @@ class GameGridView extends StatelessWidget {
                 if (newPiece.contains(index))
                   Container(
                     color: newColor,
-                  ),
+                ),
                 if (landedPieces.isNotEmpty)
                   for (int i = 0; i < landedPieces.length; i++)
                     if (landedPieces[i][0].contains(index))

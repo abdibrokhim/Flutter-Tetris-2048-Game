@@ -45,6 +45,7 @@ class _GamePageState extends State<GamePage> {
   static int numberOfSquares = 180;
   static int number = 0;
   double count  = 0;
+  bool isGameOver = false;
 
   void countLanded() {
     for (int i = 0; i < numberOfSquares; i++) {
@@ -62,23 +63,28 @@ class _GamePageState extends State<GamePage> {
   void startGame() {
     resetPieces();
     choosePiece();
-    const duration = Duration(milliseconds: 300);
+    const duration = Duration(milliseconds: 500);
 
     Timer.periodic(
       duration,
       (timer) {
         if (hitFloor()) {
-          landedPiece.add([chosenPiece]);
-          print('landedPiece: $landedPiece');
+          landedPiece.add(chosenPiece);
+          // print('landedPiece: $landedPiece');
 
-          landedPosColor.add([landedPiece, chosenColor]);
+          landedPosColor.add([chosenPiece, chosenColor]);
           print('landedPosColor: $landedPosColor');
 
           number++;
           startGame();
           timer.cancel();
         } else {
-          moveDown();
+          if (!isGameOver) {
+            moveDown();
+          } else if (isGameOver) {
+            timer.cancel();
+            return;
+          }
         }
       }
     );
@@ -86,7 +92,7 @@ class _GamePageState extends State<GamePage> {
   
   void resetPieces() {
     // landedPiece = [];
-    chosenPiece = [];
+    // chosenPiece = [];
     // landedPosColor = [];
   }
 
@@ -105,17 +111,28 @@ class _GamePageState extends State<GamePage> {
     bool hitFloor = false;
     chosenPiece.sort();
 
+    print('chosenPiece.sort(): $chosenPiece');
+
     if (chosenPiece[chosenPiece.length - 1] + 10 >= numberOfSquares) {
       hitFloor = true;
       countLanded();
     }
 
     if (landedPiece.isNotEmpty) {
-      for (int i = 0; i < landedPiece.length; i++) {
-        if (landedPiece[i].contains(chosenPiece[chosenPiece.length - 1] + 10)) {
-          hitFloor = true;
-          countLanded();
-          break;
+      if (!isGameOver) {
+        for (int i = 0; i < landedPiece.length; i++) {
+          print('landedPiece[i]: $landedPiece');
+
+          print('chosenPiece[chosenPiece.length - 1]:');
+          print(chosenPiece[chosenPiece.length - 1]);
+
+          for (int j = 0; j < chosenPiece.length; j++) {
+            if (landedPiece[i].contains(chosenPiece[j] + 10)) {
+              hitFloor = true;
+              countLanded();
+              break;
+            }
+          }
         }
       }
     }
@@ -130,6 +147,26 @@ class _GamePageState extends State<GamePage> {
       }
     });
   }
+
+  void moveLeft() {
+    setState(() {
+      for (int i = 0; i < chosenPiece.length; i++) {
+        chosenPiece[i] -= 1;
+      }
+      landedPiece[landedPiece.length-1] = chosenPiece; // update landedPiece
+    });
+  }
+
+  void moveRight() {
+    setState(() {
+      for (int i = 0; i < chosenPiece.length; i++) {
+        chosenPiece[i] += 1;
+      }
+      landedPiece[landedPiece.length-1] = chosenPiece; // update landedPiece
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +205,7 @@ class _GamePageState extends State<GamePage> {
               ),
               Expanded(
                 child: GestureDetector(
-                  onTap: startGame, 
+                  onTap: moveLeft, 
                   child: const GameButton(
                     child: Icon(
                       Icons.arrow_left,
@@ -180,7 +217,7 @@ class _GamePageState extends State<GamePage> {
               ),
               Expanded(
                 child: GestureDetector(
-                  onTap: startGame, 
+                  onTap: moveRight, 
                   child: const GameButton(
                     child: Icon(
                       Icons.arrow_right,
