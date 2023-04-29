@@ -4,8 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:tetris2048/components/grid.dart';
 import 'package:tetris2048/components/game_button.dart';
-
-
+import 'package:tetris2048/components/constants.dart';
 
 class GamePage extends StatefulWidget {
   const GamePage({super.key});
@@ -17,72 +16,52 @@ class GamePage extends StatefulWidget {
 
 class _GamePageState extends State<GamePage> {
 
-  static List<List<int>> pieces = [
-    [4, 5, 14, 15],
-    [4, 14, 24, 25],
-    [5, 15, 24, 25],
-    [4, 14, 24, 34],
-    [4, 14, 15, 25],
-    [5, 15, 14, 24],
-    [4, 5, 6, 15],
-  ];
+  List<dynamic> tempPieces = [];
 
-  List<Color> pieceColor = [
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
-    Colors.purple,
-    Colors.orange,
-    Colors.pink,
-  ];
+  List<dynamic> currentPiece = [];
+  // List<dynamic> currentPiece = [[[2, 4], [2, 5], [2, 14], [2, 15]], pieceColor[0]];
+  
+  List<dynamic> landedPieces = [];
+  // List<dynamic> currentPiece = [[[[2, 4], [2, 5], [2, 14], [2, 15]], pieceColor[0]], [[[2, 4], [2, 5], [2, 14], [2, 15]], pieceColor[0]]];
 
-  List<int> chosenPiece = [];
-  List<dynamic> landedPiece = [];
-  List<dynamic> landedPosColor = [];
-  Color chosenColor = Colors.red;
+  Color initColor = pieceColor[0];
+
+  static const duration = Duration(milliseconds: 500);
 
   static int numberOfSquares = 180;
-  static int number = 0;
   double count  = 0;
   bool isGameOver = false;
-
-  void countLanded() {
-    for (int i = 0; i < numberOfSquares; i++) {
-      if (landedPiece.contains(i)) {
-        count++;
-      }
-    }
-    if (count == numberOfSquares) {
-      print("Game Over");
-    }
-    count = 0;
-  }
+  
+  int initNumber = 2;
 
 
   void startGame() {
     resetPieces();
+
     choosePiece();
-    const duration = Duration(milliseconds: 500);
+
+    print('currentPiece[0] and currentPiece[1]:');
+    print(currentPiece[0]);
+    print(currentPiece[1]);
+
 
     Timer.periodic(
       duration,
       (timer) {
         if (hitFloor()) {
-          landedPiece.add(chosenPiece);
-          // print('landedPiece: $landedPiece');
+          landedPieces.add(currentPiece);
+          print('landedPieces: $landedPieces');
 
-          landedPosColor.add([chosenPiece, chosenColor]);
-          print('landedPosColor: $landedPosColor');
-
-          number++;
           startGame();
           timer.cancel();
+
         } else {
           if (!isGameOver) {
-            moveDown();
+            moveDown(currentPiece);
           } else if (isGameOver) {
             timer.cancel();
+            
+            print('Game Over');
             return;
           }
         }
@@ -91,48 +70,57 @@ class _GamePageState extends State<GamePage> {
   }
   
   void resetPieces() {
-    // landedPiece = [];
-    // chosenPiece = [];
-    // landedPosColor = [];
+    currentPiece = [];
   }
 
   void choosePiece() {
-    // Choose a random piece
     int randomIndex = Random().nextInt(pieces.length);
     
-    chosenPiece = pieces[randomIndex];
-    print('chosenPiece: $chosenPiece');
+    currentPiece.add(pieces[randomIndex]);
+    currentPiece.add(initColor);
 
-    chosenColor = pieceColor[randomIndex];
-    print('color: $chosenColor');
+    print('currentPiece: $currentPiece');
+
   }
+
 
   bool hitFloor() {
     bool hitFloor = false;
-    chosenPiece.sort();
 
-    print('chosenPiece.sort(): $chosenPiece');
-
-    if (chosenPiece[chosenPiece.length - 1] + 10 >= numberOfSquares) {
-      hitFloor = true;
-      countLanded();
+    // currentPiece[1].sort();
+    for (int i = 0; i < currentPiece[0].length; i++) {
+      if (currentPiece[0][i][1] + 10 >= numberOfSquares) {
+        hitFloor = true;
+      }
     }
 
-    if (landedPiece.isNotEmpty) {
-      if (!isGameOver) {
-        for (int i = 0; i < landedPiece.length; i++) {
-          print('landedPiece[i]: $landedPiece');
+    if (landedPieces.isNotEmpty) {
+      isGameOver = gameOver();
+    
+      if (isGameOver) {
+        if (hitPiece()) {
+          tempPieces = currentPiece;
 
-          print('chosenPiece[chosenPiece.length - 1]:');
-          print(chosenPiece[chosenPiece.length - 1]);
+          print('hitPiece() = true:');
 
-          for (int j = 0; j < chosenPiece.length; j++) {
-            if (landedPiece[i].contains(chosenPiece[j] + 10)) {
-              hitFloor = true;
-              countLanded();
-              break;
+          setState(() {
+            for (int i = 0; i < currentPiece[0].length; i++) {
+              print('i: $i');
+
+              print(landedPieces[landedPieces.length - 1][0][i][1] == currentPiece[0][i][1] + 10);
+              print(landedPieces[landedPieces.length - 1][0][i][0] == currentPiece[0][i][0]);
+
+              if (landedPieces[landedPieces.length - 1][0][i][1] == currentPiece[0][i][1] + 10 && landedPieces[landedPieces.length - 1][0][i][0] == currentPiece[0][i][0]) {
+
+                tempPieces[0][i][0] *= 2;
+                tempPieces[1] = pieceColor[1];
+              }
             }
-          }
+          });
+          moveDown(tempPieces);
+          
+          currentPiece = tempPieces;
+          hitFloor = true;
         }
       }
     }
@@ -140,29 +128,60 @@ class _GamePageState extends State<GamePage> {
     return hitFloor;
   }
 
-  void moveDown() {
+  bool hitPiece() {
+    bool hitPiece = false;
+
+    if (landedPieces.isNotEmpty) {
+      for (int i = 0; i < landedPieces.length; i++) {
+        for (int j = 0; j < currentPiece[0].length; j++) {
+          if (landedPieces[i][0][j][1] == currentPiece[0][j][1] + 10) {
+            hitPiece = true;
+          }
+        }
+      }
+    }
+
+    return hitPiece;
+  }
+
+  bool gameOver() {
+    if (landedPieces.isNotEmpty) {
+      for (int i = 0; i < currentPiece[0].length; i++) {
+        if (landedPieces[landedPieces.length - 1][0][i][1] == currentPiece[0][i][1] + 10) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+
+  void moveDown(List<dynamic> piece) {
     setState(() {
-      for (int i = 0; i < chosenPiece.length; i++) {
-        chosenPiece[i] += 10;
+      for (int i = 0; i < piece[0].length; i++) {
+        piece[0][i][1] += 10;
       }
     });
   }
+
 
   void moveLeft() {
     setState(() {
-      for (int i = 0; i < chosenPiece.length; i++) {
-        chosenPiece[i] -= 1;
+      for (int i = 0; i < currentPiece.length; i++) {
+        currentPiece[i] -= 1;
       }
-      landedPiece[landedPiece.length-1] = chosenPiece; // update landedPiece
+      landedPieces[landedPieces.length-1] = currentPiece; // update landedPieces
     });
   }
 
+
   void moveRight() {
     setState(() {
-      for (int i = 0; i < chosenPiece.length; i++) {
-        chosenPiece[i] += 1;
+      for (int i = 0; i < currentPiece.length; i++) {
+        currentPiece[i] += 1;
       }
-      landedPiece[landedPiece.length-1] = chosenPiece; // update landedPiece
+      landedPieces[landedPieces.length-1] = currentPiece; // update landedPieces
     });
   }
 
@@ -179,9 +198,8 @@ class _GamePageState extends State<GamePage> {
       children: <Widget> [
         Expanded(
           child: GameGridView(
-            newPiece: chosenPiece,
-            landedPieces: landedPosColor,
-            newColor: chosenColor,
+            landedPieces: landedPieces,
+            currentPiece: currentPiece,
           ),
         ),
         SizedBox(

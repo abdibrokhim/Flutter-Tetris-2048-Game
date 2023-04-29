@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 
 class GameGridView extends StatelessWidget {
-  final List<int> newPiece;
   final List<dynamic> landedPieces;
-  final Color newColor;
+  final List<dynamic> currentPiece;
   
   
   const GameGridView({
     Key? key,
-    required this.newPiece,
     required this.landedPieces,
-    required this.newColor,
+    required this.currentPiece,
     }) : super(key: key);
 
   @override
@@ -32,16 +30,41 @@ class GameGridView extends StatelessWidget {
             ),
             child: Stack(
               children: <Widget>[
-                if (newPiece.contains(index))
-                  Container(
-                    color: newColor,
-                ),
+                if (currentPiece.isNotEmpty)
+                  for (int i = 0; i < currentPiece[0].length; i++)
+                    if (currentPiece[0][i][1] == index)
+                      Container(
+                        color: currentPiece[1],
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            currentPiece[0][i][0].toString(),
+                              style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
                 if (landedPieces.isNotEmpty)
                   for (int i = 0; i < landedPieces.length; i++)
-                    if (landedPieces[i][0].contains(index))
-                      Container(
-                        color: landedPieces[i][1],
-                      ),
+                    for (int j = 0; j < landedPieces[i][0].length; j++)
+                      if (landedPieces[i][0][j][1] == index)
+                        Container(
+                          color: landedPieces[i][1],
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              landedPieces[i][0][j][0].toString(),
+                                style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
               ],
             ),
           );
