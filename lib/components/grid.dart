@@ -34,7 +34,7 @@ class GameGridView extends StatelessWidget {
                   for (int i = 0; i < currentPiece[0].length; i++)
                     if (currentPiece[0][i][1] == index)
                       Container(
-                        color: currentPiece[1],
+                        color: currentPiece[0][i][2],
                         child: Align(
                           alignment: Alignment.center,
                           child: Text(
@@ -52,7 +52,7 @@ class GameGridView extends StatelessWidget {
                     for (int j = 0; j < landedPieces[i][0].length; j++)
                       if (landedPieces[i][0][j][1] == index)
                         Container(
-                          color: landedPieces[i][1],
+                          color: landedPieces[i][0][j][2],
                           child: Align(
                             alignment: Alignment.center,
                             child: Text(

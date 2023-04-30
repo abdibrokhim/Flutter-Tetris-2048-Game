@@ -19,12 +19,17 @@ class _GamePageState extends State<GamePage> {
   List<dynamic> tempPieces = [];
 
   List<dynamic> currentPiece = [];
-  // List<dynamic> currentPiece = [[[2, 4], [2, 5], [2, 14], [2, 15]], pieceColor[0]];
+  // example list
+  // List<dynamic> currentPiece = [
+  //            [[2, 4, pieceColor[0]], [2, 5, pieceColor[0]], [2, 14, pieceColor[0]], [2, 15, pieceColor[0]]],
+  // ];
   
   List<dynamic> landedPieces = [];
-  // List<dynamic> currentPiece = [[[[2, 4], [2, 5], [2, 14], [2, 15]], pieceColor[0]], [[[2, 4], [2, 5], [2, 14], [2, 15]], pieceColor[0]]];
-
-  Color initColor = pieceColor[0];
+  // example list
+  // List<dynamic> currentPiece = [
+  //        [[2, 4, pieceColor[0]], [2, 5, pieceColor[0]], [2, 14, pieceColor[0]], [2, 15, pieceColor[0]]],
+  //        [[2, 4, pieceColor[0]], [2, 5, pieceColor[0]], [2, 14, pieceColor[0]], [2, 15, pieceColor[0]]]
+  // ];
 
   static const duration = Duration(milliseconds: 500);
 
@@ -32,17 +37,11 @@ class _GamePageState extends State<GamePage> {
   double count  = 0;
   bool isGameOver = false;
   
-  int initNumber = 2;
-
 
   void startGame() {
     resetPieces();
 
     choosePiece();
-
-    print('currentPiece[0] and currentPiece[1]:');
-    print(currentPiece[0]);
-    print(currentPiece[1]);
 
 
     Timer.periodic(
@@ -50,7 +49,11 @@ class _GamePageState extends State<GamePage> {
       (timer) {
         if (hitFloor()) {
           landedPieces.add(currentPiece);
-          print('landedPieces: $landedPieces');
+          
+          print('landedPieces:');
+          for (int i = 0; i < landedPieces.length; i++) {
+            print(landedPieces[i]);
+          }
 
           startGame();
           timer.cancel();
@@ -77,7 +80,6 @@ class _GamePageState extends State<GamePage> {
     int randomIndex = Random().nextInt(pieces.length);
     
     currentPiece.add(pieces[randomIndex]);
-    currentPiece.add(initColor);
 
     print('currentPiece: $currentPiece');
 
@@ -95,31 +97,53 @@ class _GamePageState extends State<GamePage> {
     }
 
     if (landedPieces.isNotEmpty) {
-      isGameOver = gameOver();
+      // isGameOver = gameOver();
     
-      if (isGameOver) {
+      if (!isGameOver) {
         if (hitPiece()) {
-          tempPieces = currentPiece;
 
           print('hitPiece() = true:');
 
           setState(() {
-            for (int i = 0; i < currentPiece[0].length; i++) {
-              print('i: $i');
+            for (int j = landedPieces.length - 1; j >= 0; j--) {
+              print('j: $j');
+              
+              for (int k = 0; k < landedPieces[j][0].length; k++) {
+                print('k: $k');
 
-              print(landedPieces[landedPieces.length - 1][0][i][1] == currentPiece[0][i][1] + 10);
-              print(landedPieces[landedPieces.length - 1][0][i][0] == currentPiece[0][i][0]);
+                for (int i = 0; i < currentPiece[0].length; i++) {
+                  print('i: $i');
 
-              if (landedPieces[landedPieces.length - 1][0][i][1] == currentPiece[0][i][1] + 10 && landedPieces[landedPieces.length - 1][0][i][0] == currentPiece[0][i][0]) {
+                  print(landedPieces[j][0][k][1] == currentPiece[0][i][1] + 10);
+                  print(landedPieces[j][0][k][0] == currentPiece[0][i][0]);
 
-                tempPieces[0][i][0] *= 2;
-                tempPieces[1] = pieceColor[1];
+                  if (landedPieces[j][0][k][1] == currentPiece[0][i][1] + 10 && landedPieces[j][0][k][0] == currentPiece[0][i][0]) {
+
+                    landedPieces[j][0][k][0] *= 2;
+                    print("landedPieces[j][0][k][0]:");
+                    print(landedPieces[j][0][k][0]);
+                    
+                    if (landedPieces[j][0][k][0] == 4) {
+                      landedPieces[j][0][k][2] = pieceColor[1];
+                    } else if (landedPieces[j][0][k][0] == 8) {
+                      landedPieces[j][0][k][2] = pieceColor[2];
+                    } else if (landedPieces[j][0][k][0] == 16) {
+                      landedPieces[j][0][k][2] = pieceColor[3];
+                    }
+
+                    List<dynamic> temp = currentPiece[0][i];
+                    print('temp: $temp');
+                    
+                    currentPiece[0].removeAt(i);
+
+                    moveDown(currentPiece);
+                    // break;
+                  }
+                }
               }
             }
           });
-          moveDown(tempPieces);
-          
-          currentPiece = tempPieces;
+
           hitFloor = true;
         }
       }
@@ -133,9 +157,11 @@ class _GamePageState extends State<GamePage> {
 
     if (landedPieces.isNotEmpty) {
       for (int i = 0; i < landedPieces.length; i++) {
-        for (int j = 0; j < currentPiece[0].length; j++) {
-          if (landedPieces[i][0][j][1] == currentPiece[0][j][1] + 10) {
-            hitPiece = true;
+        for (int k = 0; k < landedPieces[i][0].length; k++) {
+          for (int j = 0; j < currentPiece[0].length; j++) {
+            if (landedPieces[i][0][k][1] == currentPiece[0][j][1] + 10) {
+              hitPiece = true;
+            }
           }
         }
       }
@@ -165,7 +191,7 @@ class _GamePageState extends State<GamePage> {
     });
   }
 
-
+  // TODO: implement turnLeft
   void moveLeft() {
     setState(() {
       for (int i = 0; i < currentPiece.length; i++) {
@@ -176,6 +202,7 @@ class _GamePageState extends State<GamePage> {
   }
 
 
+  // TODO: implement turnRight
   void moveRight() {
     setState(() {
       for (int i = 0; i < currentPiece.length; i++) {
